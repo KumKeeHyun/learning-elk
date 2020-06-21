@@ -64,6 +64,23 @@ Lucene 검색엔진 기반의 데이터베이스로 고성능의 검색 기능, 
 
 ## Kibana
 Elasticsearch에서 색인된 데이터를 검색하고 시각화하는 기능을 제공한다. Elastic Stack 클러스터를 모니터링, 관리 및 보호하기 위한 사용자 인터페이스의 역할과 Elastic Stack에서 개발된 기본 제공 솔루션의 중앙 집중식 허브 역할도 한다.
+
+### 기능 메뉴
+1. Discover
+    - Elasticsearch에 저장된 데이터를 한눈에 확인할 수 있는 메인 페이지
+    - Auto-refresh
+        + Elasticsearch의 검색은 하나의 Thread로 동작
+        + 주기를 짧게 하면 많은 request 발생
+        + Dashboard에 여러개의 모듈이 있으면 각각의 search request 발생
+        + 실시간 모니터링을 하려면 Dashboard 차트 수를 줄이거나 주기를 너무 짧지 않게 해야 함
+
+1. Visualize
+    - Elasticsearch에 수집된 결과를 시각화하여 표현
+    - 영역 차트, 데이터 테이블, 선형 차트, 마크다운 위젯, 메트릭, 원형 차트, 타일 맵, 세로 막대 차트
+
+1. Dashboard
+    - Visualize를 통해 시각화한 객체를 모아 하나의 Dashboard에 배치하여 한눈에 확인할 수 있도록 함
+
 <br>
 
 ## Beats
