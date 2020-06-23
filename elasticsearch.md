@@ -1,7 +1,7 @@
 # Elasticsearch
 
-https://aspell.tistory.com/75
-https://esbook.kimjmin.net/06-text-analysis/6.1-indexing-data
+- https://aspell.tistory.com/75
+- https://esbook.kimjmin.net/06-text-analysis/6.1-indexing-data
 
 ## Elasticsearch 란?
 1. Full-Text 검색 엔진
@@ -43,7 +43,7 @@ https://esbook.kimjmin.net/06-text-analysis/6.1-indexing-data
 
 
 ## 구조
-![Optional Text](images/es_head.png)
+<img src="./images/es_head.png" width="600px" height="300px"></img>
 1. Cluster
     - {-Vxovpx, 71_q51B, Krvd6u4, oV7t_ZK, qiQbIvH, uLdsPJ4} 집합 
 1. Node
