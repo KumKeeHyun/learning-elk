@@ -43,7 +43,7 @@
 
 
 ## 구조
-<img src="./images/es_head.png" width="600px" height="300px"></img>
+<img src="./images/es_head.PNG" width="600px" height="300px"></img>
 1. Cluster
     - {-Vxovpx, 71_q51B, Krvd6u4, oV7t_ZK, qiQbIvH, uLdsPJ4} 집합 
 1. Node
@@ -89,3 +89,177 @@
 1. Delete
     - curl -XDELETE localhost:9200/index_name/doc_type/1
     - delete from index_name where id = 1
+
+## 실습
+- curl -XGET http://localhost:9200/classes?pretty
+    - classes 이름의 인덱스가 있는지 확인
+
+- curl -XPUT http://localhost:9200/classes
+    - classes 이름의 인덱스 생성
+
+- curl -XDELETE http://localhost:9200/classes
+    - classes 이름의 인덱스 삭제
+    
+- curl -XPOST http://localhost:9200/classes/class/1/ -d '{"title":"Algorithm", "professor":"Joh-Hn"}' -H 'Content-Type:application/json'
+     + 5.5.0 이상 버전부터 헤더에 타입없으면 에러
+     - -d 에 해당하는 다큐멘트 추가
+
+- -H 'Content-Type:application/json' 안했을 때 오류
+```json
+{
+  "error" : "Content-Type header [application/x-www-form-urlencoded] is not supported",
+  "status" : 406
+}
+
+```
+
+- curl -XPOST localhost:9200/classes/class/2/ -d @oneclass.json -H 'Content-Type:application/json'
+    - 파일을 사용해서 다큐멘트 생성
+
+### Update
+- curl -XPOST localhost:9200/classes/class/2/_update?pretty -d '{"doc":{"major":"smartsystem"}}' -H 'Content-Type:application/json'
+    - id = 2 인 다큐멘트에 "major":"smartsystem" 키, 벨류 추가
+    - 그대로 curl -XPOST localhost:9200/classes/class/2/_update?pretty -d '{"doc":{"major":"Smart System Software"}}' -H 'Content-Type:application/json' 하면 major가 Smart System Software로 변경
+
+- curl -XPOST localhost:9200/classes/class/2/_update?pretty -d '{"doc":{"unit":1}}' -H 'Content-Type:application/json'
+
+- curl -XPOST localhost:9200/classes/class/2/_update?pretty -d '{"script":"ctx._source.unit += 5"}' -H 'Content-Type:application/json'
+    - 스크립트로 변경
+
+### Bulk
+- curl -XPOST localhost:9200/_bulk?pretty --data-binary @classes.json -H 'Content-Type:application/json'
+    - 벌크로 추가
+
+- bulk 파일 구조
+```json
+{"index" : {"_index" : "iname", "_type" : "tname", "_id" : "1"}}
+{"key1" : "value1", "key2" : "value2", "key3":"value3"}
+```
+
+- --data-binary 안했을 때 오류 -> 하는 기능, 이유 추가
+```json
+{
+  "error" : {
+    "root_cause" : [
+      {
+        "type" : "illegal_argument_exception",
+        "reason" : "The bulk request must be terminated by a newline [\n]"
+      }
+    ],
+    "type" : "illegal_argument_exception",
+    "reason" : "The bulk request must be terminated by a newline [\n]"
+  },
+  "status" : 400
+}
+
+```
+
+### Mapping
+- curl -XPUT 'localhost:9200/classes/class/_mapping?pretty' -d @classesRating_mapping.json -H 'Content-Type:application/json'
+    + 'string' type 삭제됨, 'text'로 바뀜
+
+### Search
+- _search 결과
+```json
+{
+  "took": 5,  # 검색에 소요된 시간(ms)
+  "_shard": {  # 샤드 정보
+    "total": 2,
+    "successful": 2,
+    "failed": 0
+  },
+  "hits": {
+    "total": 1,  # 결과 개수
+    "max_score": 0.3708323,  # 검색 결과 중 가장 높은 스코어
+    "hits": [# 검색 결과 상세
+        {
+          "_index" : "iname",
+          "_type" : "tname",
+          "_id" : "1",
+          "_score" : 1.0, # 결과 점수
+          "_source" : {
+            "key1" : "value1",
+            "key2" : "value2"
+          }
+        }, 
+        {
+            ...
+            ...
+        }
+    ]  
+  }
+}
+```
+
+- curl -XGET localhost:9200/basketball/record/_search?pretty
+    - 모든 다큐멘트 검색
+
+- curl -XGET 'localhost:9200/basketball/record/_search?q=points:30&pretty'
+    + URL을 '' 으로 감싸주지 않으면 오류남 &가 shell 명령으로 인식되는 것 같음
+    - points 가 30인 다큐멘트를 검색
+
+- curl -XGET 'localhost:9200/basketball/record/_search?pretty' -d '
+{
+    "query":{
+        "term":{"points":30}
+    }
+}' -H 'Content-Type:application/json'
+    - request body를 사용하여 검색
+
+- request body 구조
+```json
+
+```
+
+### Metric Aggregations (산술)
+- curl -XGET localhost:9200/basketball/_search?pretty --data-binary @avg_points_aggs.json -H 'Content-Type:application/json'
+```json
+{
+	"size" : 0,
+	"aggs" : {
+		"avg_score" : { # 어그리게이션 이름
+			"avg" : { # 어그리게이션 타입
+				"field" : "points" # 뭘로 어그리게이션 할건지
+			}
+		}
+	}
+}
+```
+
+### Bucket Aggregations (group by)
+- curl -XGET localhost:9200/_search?pretty --data-binary @terms_aggs.json -H 'Content-Type:application/json'
+- curl -XGET localhost:9200/_search?pretty --data-binary @stats_by_team.json -H 'Content-Type:application/json'
+
+```json
+
+{
+    # terms_aggs.json
+    "size" : 0, # 어그리게이션 결과만 보기위해서
+    "aggs" : {
+        "players" : {
+            "terms" : {
+                "field" : "team"
+            }   
+        }
+    }
+}
+
+{
+    # stats_by_team.json
+    "size" : 0,
+    "aggs" : {
+        "team_stats" : {
+            "terms" : {
+                "field" : "team" # group by team
+            },
+            "aggs" : {
+                "stats_score" : { as stats_score
+                    "stats" : {
+                        "field" : "points" # select stats(points)
+                    }
+                }
+            }
+        }
+    }
+}
+```
